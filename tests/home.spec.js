@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { Helper } from '../page-objects/helper'
 import { HomePage } from '../page-objects/homePage'
-import { ResumePage } from '../page-objects/ResumePage'
+import { ResumePage } from '../page-objects/resumePage'
 
 test.describe('Home page', () => {
     test('Verify Home Page', async ({ page }) => {
