@@ -1,6 +1,6 @@
 # Playwright Portfolio Automation
 
-A test automation project using Playwright to run end-to-end tests across multiple browsers.
+A test automation project using Playwright to run end-to-end tests across multiple browsers for the Carlos Ng portfolio website. This project follows the Page Object Model (POM) pattern for maintainable and scalable test automation.
 
 ## Prerequisites
 
@@ -47,7 +47,13 @@ npx playwright test --headed
 ### Run a specific test file:
 
 ```bash
-npx playwright test tests/example.spec.js
+npx playwright test tests/home.spec.js
+```
+
+### Run tests with a specific tag:
+
+```bash
+npx playwright test --grep '@runSolo'
 ```
 
 ### Run tests in debug mode:
@@ -68,10 +74,17 @@ npx playwright show-report
 
 ```
 .
-├── tests/              # Test files
-├── playwright.config.js # Playwright configuration
-├── playwright-report/  # Test results and reports
-└── README.md           # This file
+├── page-objects/           # Page Object Model classes
+│   ├── helper.js           # Helper functions
+│   ├── homePage.js         # Home page object
+│   └── ResumePage.js       # Resume page object
+├── tests/                  # Test files
+│   ├── example.spec.js     # Example tests
+│   └── home.spec.js        # Home and Resume tests
+├── playwright.config.js    # Playwright configuration
+├── playwright-report/      # Test results and reports
+├── package.json            # Project dependencies
+└── README.md               # This file
 ```
 
 ## Configuration
@@ -82,6 +95,21 @@ The project is configured to run tests on three browsers:
 - **WebKit** - Desktop Safari
 
 All tests run in non-headless mode by default. Modify `playwright.config.js` to change settings.
+
+```
+
+## Best Practices Used
+
+- **Playwright Built-in Locators**: Uses `getByRole()` and `getByText()` for robust element selection
+- **Page Object Model**: Encapsulates page elements and methods for better maintainability
+- **Async/Await**: All methods are async for proper handling of asynchronous operations
+- **Download Handling**: Properly waits for and validates file downloads
+- **Assertions**: Uses Playwright's `expect()` for test validation
+
+## Dependencies
+
+- `@playwright/test` - Playwright testing library
+- `fs` - Node.js file system module (for file operations)
 
 ## License
 
