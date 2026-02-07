@@ -1,14 +1,26 @@
 import { test, expect } from '@playwright/test'
-import { Helper } from '../page-objects/helper';
-import { HomePage } from '../page-objects/homePage';
+import { Helper } from '../page-objects/helper'
+import { HomePage } from '../page-objects/homePage'
+import { ResumePage } from '../page-objects/ResumePage'
 
 test.describe('Home page', () => {
-    test('Verify Home page @runSolo', async ({ page }) => {
+    test('Verify Home Page', async ({ page }) => {
 
-        const h = new Helper(page);
-        const _page = new HomePage(page);
+        const h = new Helper(page)
+        const _page = new HomePage(page)
 
-        // Navigate directly to Wikipedia
-        await _page.goToHomePage();
+        await _page.goToHomePage()
+    });
+
+    test('Verify Resume Page', async ({ page }) => {
+
+        const h = new Helper(page)
+        const _page = new HomePage(page)
+        const _pageResume = new ResumePage(page)
+
+        await _page.goToHomePage()
+        await _pageResume.goToResumePage()
+        await _pageResume.verifyDownloadPdfButton()
+        await _pageResume.downloadPdfAndVerify()
     });
 });
