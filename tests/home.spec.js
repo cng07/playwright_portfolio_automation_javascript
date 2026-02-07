@@ -10,6 +10,12 @@ test.describe('Home page', () => {
         const _page = new HomePage(page)
 
         await _page.goToHomePage()
+        
+        await _page.verifyNavigationBarSection()
+        await _page.verifyHeroSection()
+        await _page.verifySocialMediaSection()
+        await _page.verifySkillsSection()
+        await _page.verifyExperienceSection()
     });
 
     test('Verify Resume Page', async ({ page }) => {
