@@ -1,1 +1,1 @@
-# portfolio_playwright_javascript
+# playwright_portfolio_automation_javascript
