@@ -1,36 +1,43 @@
-# Playwright Portfolio Automation
+# Playwright Portfolio Automation (JavaScript)
 
-A test automation project using Playwright to run end-to-end tests across multiple browsers for the Carlos Ng portfolio website. This project follows the Page Object Model (POM) pattern for maintainable and scalable test automation.
+End-to-end UI and API smoke tests for the Carlos Ng portfolio site using Playwright and the Page Object Model (POM).
+
+Target site: `https://carlosng07.vercel.app`
+
+## Coverage
+
+- Home page UI validation
+- About, Contact, Education, Experience, Projects, Resume, and Certifications page UI validation
+- API response checks for internal links and selected external links
+- Resume PDF download validation
+
+## Tech Stack
+
+- Node.js
+- `@playwright/test`
+- `@fast-csv/parse`
 
 ## Prerequisites
 
-- Node.js (v16 or higher)
+- Node.js LTS (18+ recommended)
 - npm
 
 ## Installation
 
-1. Clone or navigate to the project directory
-2. Install dependencies:
-
 ```bash
 npm install
-```
-
-3. Install Playwright browsers:
-
-```bash
 npx playwright install
 ```
 
 ## Running Tests
 
-### Run all tests on all browsers (chromium, firefox, webkit):
+Run all tests on all configured browsers (`chromium`, `firefox`, `webkit`):
 
 ```bash
 npx playwright test
 ```
 
-### Run tests on a specific browser:
+Run on a specific browser:
 
 ```bash
 npx playwright test --project=chromium
@@ -38,79 +45,110 @@ npx playwright test --project=firefox
 npx playwright test --project=webkit
 ```
 
-### Run tests in headed mode (see browser window):
+Run a specific test file:
+
+```bash
+npx playwright test tests/home.test.js
+```
+
+Run tests by title pattern:
+
+```bash
+npx playwright test --grep "API links"
+```
+
+Run in headed mode:
 
 ```bash
 npx playwright test --headed
 ```
 
-### Run a specific test file:
-
-```bash
-npx playwright test tests/home.spec.js
-```
-
-### Run tests with a specific tag:
-
-```bash
-npx playwright test --grep '@runSolo'
-```
-
-### Run tests in debug mode:
+Run in debug mode:
 
 ```bash
 npx playwright test --debug
 ```
 
-## Viewing Test Results
+Run in CI mode locally (PowerShell):
 
-After running tests, open the HTML report:
+```powershell
+$env:CI='1'; npx playwright test
+```
+
+## Test Results
+
+Open the HTML report:
 
 ```bash
 npx playwright show-report
 ```
 
+Notes:
+- Local runs generate an HTML report.
+- CI runs also generate `test-results/results.json` and `test-results/junit.xml`.
+
 ## Project Structure
 
-```
+```text
 .
-├── page-objects/           # Page Object Model classes
-│   ├── helper.js           # Helper functions
-│   ├── homePage.js         # Home page object
-│   └── ResumePage.js       # Resume page object
-├── tests/                  # Test files
-│   ├── example.spec.js     # Example tests
-│   └── home.spec.js        # Home and Resume tests
-├── playwright.config.js    # Playwright configuration
-├── playwright-report/      # Test results and reports
-├── package.json            # Project dependencies
-└── README.md               # This file
+|-- .github/
+|   `-- workflows/
+|       `-- playwright.yml
+|-- page-objects/
+|   |-- aboutPage.js
+|   |-- certificationsPage.js
+|   |-- contactPage.js
+|   |-- educationPage.js
+|   |-- experiencePage.js
+|   |-- helper.js
+|   |-- homePage.js
+|   |-- projectsPage.js
+|   `-- resumePage.js
+|-- tests/
+|   |-- about.test.js
+|   |-- certifications.test.js
+|   |-- contact.test.js
+|   |-- education.test.js
+|   |-- experience.test.js
+|   |-- home.test.js
+|   |-- projects.test.js
+|   `-- resume.test.js
+|-- playwright.config.js
+|-- package.json
+`-- README.md
 ```
 
-## Configuration
+## Playwright Configuration Highlights
 
-The project is configured to run tests on three browsers:
-- **Chromium** - Desktop Chrome
-- **Firefox** - Desktop Firefox
-- **WebKit** - Desktop Safari
+- `testDir`: `./tests`
+- `fullyParallel`: `true`
+- `retries`: `2` in CI, `0` locally
+- `workers`: `4` in CI
+- Browsers: Desktop Chrome, Firefox, and Safari profiles
+- `headless`: `false` locally, `true` in CI
+- `trace`: `on-first-retry`
+- `screenshot`: `only-on-failure`
+- `video`: `retain-on-failure` in CI
 
-All tests run in non-headless mode by default. Modify `playwright.config.js` to change settings.
+## CI
 
-```
+GitHub Actions workflow: `.github/workflows/playwright.yml`
 
-## Best Practices Used
+Triggers:
+- Push to `main` or `master`
+- Pull requests to `main` or `master`
 
-- **Playwright Built-in Locators**: Uses `getByRole()` and `getByText()` for robust element selection
-- **Page Object Model**: Encapsulates page elements and methods for better maintainability
-- **Async/Await**: All methods are async for proper handling of asynchronous operations
-- **Download Handling**: Properly waits for and validates file downloads
-- **Assertions**: Uses Playwright's `expect()` for test validation
+Main CI steps:
+1. `npm ci`
+2. `npx playwright install --with-deps`
+3. `npx playwright test`
+4. Upload `playwright-report/` as an artifact
 
-## Dependencies
+## Notes
 
-- `@playwright/test` - Playwright testing library
-- `fs` - Node.js file system module (for file operations)
+- Tests run against the deployed live site, so internet connectivity is required.
+- Page navigation URLs are currently hardcoded in the page object classes.
 
 ## License
 
-See LICENSE file for details.
+MIT License.
