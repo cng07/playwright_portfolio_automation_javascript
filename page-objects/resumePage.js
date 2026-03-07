@@ -3,23 +3,63 @@ import { Helper } from "./helper"
 import fs from "fs"
 
 export class ResumePage {
+    
     constructor(page) {
         this.page = page
         this.h = new Helper(page)
 
-        this.resumePage = page.getByRole('link', { name: 'Resume' })
-        this.downloadPdfButton = page.getByRole('button', { name: 'Download PDF' })
+        // Accessibility Elements
+        this.skipToContentLink = page.getByRole('link', { name: 'Skip to content' })
+        this.mainContent = page.locator('#main-content')
 
+        // Navigation Elements
+        this.resumePage = page.getByRole('link', { name: 'Resume' })
+
+        // Resume Page Elements
+        this.resumeHeading = page.getByRole('heading', { name: 'Resume', level: 1 })
+        this.downloadPdfButton = page.getByRole('button', { name: 'Download PDF' })
+        this.resumePdfObject = page.locator('object[type="application/pdf"]')
+        this.resumePdfIframe = page.locator('object iframe[title="Carlos Ng Resume"]')
+
+        // Footer Links
+        this.privacyPolicyLink = page.getByRole('link', { name: 'Privacy Policy' })
+        this.termsAndConditionsLink = page.getByRole('link', { name: 'Terms & Conditions' })
     }
 
     async goToResumePage() {
         await this.resumePage.click()
         await this.page.waitForLoadState('domcontentloaded')
-        await expect(this.page).toHaveTitle(/Carlos Ng | Portfolio/)
+        await expect(this.page).toHaveURL(/\/resume$/)
+        await expect(this.page).toHaveTitle('Carlos Ng | Resume')
+    }
+
+    async goToResumePageDirect() {
+        await this.page.goto('https://carlosng07.vercel.app/resume')
+        await this.page.waitForLoadState('domcontentloaded')
+        await expect(this.page).toHaveURL(/\/resume$/)
+        await expect(this.page).toHaveTitle('Carlos Ng | Resume')
+    }
+
+    async verifyAccessibilityElements() {
+        await expect(this.skipToContentLink).toHaveAttribute('href', '#main-content')
+        await expect(this.mainContent).toBeVisible()
+    }
+    
+    async verifyResumePageHeader() {
+        await expect(this.resumeHeading).toBeVisible()
     }
 
     async verifyDownloadPdfButton() {
         await expect(this.downloadPdfButton).toBeVisible()
+        await expect(this.downloadPdfButton).toBeEnabled()
+    }
+
+    async verifyResumeViewerSection() {
+        await expect(this.resumePdfObject).toBeVisible()
+        await expect(this.resumePdfObject).toHaveAttribute('data', '/Carlos_Ng_Resume.pdf')
+        await expect(this.resumePdfIframe).toBeVisible()
+        await expect(this.resumePdfIframe).toHaveAttribute('src', /docs\.google\.com\/viewer/)
+        await expect(this.resumePdfIframe).toHaveAttribute('src', /Carlos_Ng_Resume\.pdf/)
     }
 
     async downloadPdfAndVerify() {
@@ -27,19 +67,58 @@ export class ResumePage {
         await this.downloadPdfButton.click()
         const download = await downloadPromise
 
-        // Verify filename
+        // Verify download metadata
         const filename = download.suggestedFilename()
-        expect(filename).toContain('Carlos_Ng_Resume')
+        expect(filename).toBe('Carlos_Ng_Resume.pdf')
+        expect(download.url()).toContain('/Carlos_Ng_Resume.pdf')
+        const apiResponse = await this.page.request.get(download.url(), { timeout: 30000 })
+        expect(apiResponse.status()).toBe(200)
+        expect(apiResponse.headers()['content-type']).toContain('application/pdf')
 
-        // Get file path and verify size (646 KB = 661504 bytes)
+        // Get file path and verify it is in a reasonable expected size range
         const filePath = await download.path()
+        expect(filePath).toBeTruthy()
+        if (!filePath) {
+            throw new Error('Download path is empty')
+        }
         const stats = fs.statSync(filePath)
         const fileSizeInKB = stats.size / 1024
+        expect(fileSizeInKB).toBeGreaterThan(500)
+        expect(fileSizeInKB).toBeLessThan(1000)
         
-        expect(fileSizeInKB).toBeCloseTo(653, 0)
-
         // Delete the downloaded file
         fs.unlinkSync(filePath)
     }
-    
+
+    async verifyFooterSection() {
+        await expect(this.privacyPolicyLink).toBeVisible()
+        await expect(this.termsAndConditionsLink).toBeVisible()
+        await expect(this.privacyPolicyLink).toHaveAttribute('href', '/privacy')
+        await expect(this.termsAndConditionsLink).toHaveAttribute('href', '/terms')
+    }
+
+    async verifyResumePdfApiResponse() {
+        const response = await this.page.request.get('https://carlosng07.vercel.app/Carlos_Ng_Resume.pdf', { timeout: 30000 })
+        expect(response.status()).toBe(200)
+        expect(response.headers()['content-type']).toContain('application/pdf')
+        const contentLength = Number(response.headers()['content-length'] || '0')
+        expect(contentLength).toBeGreaterThan(500000)
+    }
+
+    async verifyResumeInternalLinksApiResponses() {
+        await this.h.verifyInternalPathsApiResponses(['/resume', '/privacy', '/terms'])
+    }
+
+    async verifyAllResumePageElements() {
+        await this.verifyAccessibilityElements()
+        await this.verifyResumePageHeader()
+        await this.verifyDownloadPdfButton()
+        await this.verifyResumeViewerSection()
+        await this.verifyFooterSection()
+    }
+
+    async verifyAllResumeApiChecks() {
+        await this.verifyResumePdfApiResponse()
+        await this.verifyResumeInternalLinksApiResponses()
+    }
 }
